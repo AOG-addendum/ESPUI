@@ -1,4 +1,5 @@
 const UI_INITIAL_GUI = 200;
+const UI_BATCH_UPDATE = 201;
 const UPDATE_OFFSET = 100;
 
 const UI_TITEL = 0;
@@ -158,6 +159,15 @@ function start() {
         });
         break;
         
+      case UI_BATCH_UPDATE:
+        data.controls.forEach(element => {
+          var fauxEvent = {
+            data: JSON.stringify(element)
+          };
+          handleEvent(fauxEvent);
+        });
+        break;
+
       case UI_TITEL:
         document.title = data.label;
         $("#mainHeader").html(data.label);

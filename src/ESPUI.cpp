@@ -502,9 +502,77 @@ void ESPUIClass::addGraphPoint( uint16_t id, int line, int nValue, int clientId 
   }
 }
 
+void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
+  Control* control = this->controls;
+
+  DynamicJsonBuffer jsonBuffer( 4096 );
+  JsonObject& root = jsonBuffer.createObject();
+  root["type"] = ( int )ControlType::BatchUpdate;
+  JsonArray& items = jsonBuffer.createArray();
+
+  while( control != nullptr ) {
+    if( control->dirty ) {
+      JsonObject& item = jsonBuffer.createObject();
+
+      item["type"] = ( int )control->type + ControlType::UpdateOffset;
+      item["value"] = control->value;
+      item["id"] = control->id;
+      item["color"] = ( int )control->color;
+
+      items.add( item );
+
+      control->dirty = false;
+    }
+
+    control = control->next;
+  }
+
+  // Send as one big bunch
+  root["controls"] = items;
+
+  size_t len = root.measureLength();
+  char* buffer = new char[ len + 1 ];
+
+  if( buffer ) {
+    root.printTo( ( char* )buffer, len + 1 );
+
+    if( clientId > 0 ) {
+      // This is a hacky workaround because ESPAsyncWebServer does not have a function
+      // like this and it's clients array is private
+      int tryId = 0;
+
+      for( int count = 0; count < this->ws->count(); ) {
+        if( this->ws->hasClient( tryId ) ) {
+          if( clientId != tryId ) {
+            this->ws->client( tryId )->text( buffer );
+
+            if( this->verbosity >= Verbosity::VerboseJSON ) {
+              Serial.println( buffer );
+            }
+          }
+
+          count++;
+        }
+
+        tryId++;
+      }
+    } else {
+      if( this->verbosity >= Verbosity::VerboseJSON ) {
+        Serial.println( buffer );
+      }
+
+      this->ws->textAll( buffer );
+    }
+
+  }
+
+  delete buffer;
+}
+
+
 void ESPUIClass::updateControl( Control* control, int clientId ) {
-  if ( control ) {
-    constexpr size_t sizeOfBuffer = 200;
+  if( control ) {
+    constexpr size_t sizeOfBuffer = 256;
 
     StaticJsonBuffer<sizeOfBuffer> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
@@ -587,6 +655,17 @@ void ESPUIClass::updateControl( uint16_t id, String value, int clientId ) {
   }
 }
 
+void ESPUIClass::updateControlAsync( Control* control ) {
+  if( control ) {
+    control->dirty = true;
+  }
+}
+
+void ESPUIClass::updateControlAsync( uint16_t id ) {
+  Control* control = getControl( id );
+  updateControlAsync( control );
+}
+
 void ESPUIClass::print( uint16_t id, String value ) {
   updateControl( id, value );
 }
@@ -622,8 +701,7 @@ Due to a change in the ESPAsyncWebserver library this had top be changed to be
 sent as one blob at the beginning. Therefore a new type is used as well
 */
 void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
-//   String json;
-  DynamicJsonBuffer jsonBuffer( 4000 );
+  DynamicJsonBuffer jsonBuffer( 4096 );
   JsonObject& root = jsonBuffer.createObject();
   root["type"] = ( int )UI_INITIAL_GUI;
   JsonArray& items = jsonBuffer.createArray();
