@@ -132,9 +132,9 @@ class Control {
     static constexpr uint16_t noParent = 0xffff;
 
     Control(
-      ControlType type, const char* label,
-      void ( *callback )( Control*, int ),
-      String value, ControlColor color, uint16_t parentControl = Control::noParent )
+            ControlType type, const char* label,
+            void ( *callback )( Control*, int ),
+            String value, ControlColor color, uint16_t parentControl = Control::noParent )
       : type( type ), label( label ), callback( callback ), value( value ), color( color ), parentControl( parentControl ), next( nullptr ) {
       id = idCounter++;
 //       Serial.print( "Control id: " );

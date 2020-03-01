@@ -18,22 +18,22 @@ uint16_t Control::idCounter = 0;
 // ################# Spiffs functions
 #if defined(ESP32)
 void listDir( const char* dirname, uint8_t levels ) {
-  if ( ESPUI.verbosity ) {
+  if( ESPUI.verbosity ) {
     Serial.printf( "Listing directory: %s\n", dirname );
   }
 
   File root = SPIFFS.open( dirname );
 
-  if ( !root ) {
-    if ( ESPUI.verbosity ) {
+  if( !root ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Failed to open directory" );
     }
 
     return;
   }
 
-  if ( !root.isDirectory() ) {
-    if ( ESPUI.verbosity ) {
+  if( !root.isDirectory() ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Not a directory" );
     }
 
@@ -42,18 +42,18 @@ void listDir( const char* dirname, uint8_t levels ) {
 
   File file = root.openNextFile();
 
-  while ( file ) {
-    if ( file.isDirectory() ) {
-      if ( ESPUI.verbosity ) {
+  while( file ) {
+    if( file.isDirectory() ) {
+      if( ESPUI.verbosity ) {
         Serial.print( "  DIR : " );
         Serial.println( file.name() );
       }
 
-      if ( levels ) {
+      if( levels ) {
         listDir( file.name(), levels - 1 );
       }
     } else {
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.print( "  FILE: " );
         Serial.print( file.name() );
         Serial.print( "  SIZE: " );
@@ -73,7 +73,7 @@ void listDir( const char* dirname, uint8_t levels ) {
   String str = "";
   Dir dir = SPIFFS.openDir( "/" );
 
-  while ( dir.next() ) {
+  while( dir.next() ) {
     Serial.print( "  FILE: " );
     Serial.print( dir.fileName() );
     Serial.print( "  SIZE: " );
@@ -84,7 +84,7 @@ void listDir( const char* dirname, uint8_t levels ) {
 #endif
 
 void ESPUIClass::list() {
-  if ( !SPIFFS.begin() ) {
+  if( !SPIFFS.begin() ) {
     Serial.println( "SPIFFS Mount Failed" );
     return;
   }
@@ -106,42 +106,42 @@ void ESPUIClass::list() {
 }
 
 void deleteFile( const char* path ) {
-  if ( ESPUI.verbosity ) {
+  if( ESPUI.verbosity ) {
     Serial.print( SPIFFS.exists( path ) );
   }
 
-  if ( !SPIFFS.exists( path ) ) {
-    if ( ESPUI.verbosity ) {
+  if( !SPIFFS.exists( path ) ) {
+    if( ESPUI.verbosity ) {
       Serial.printf( "File: %s does not exist, not deleting\n", path );
     }
 
     return;
   }
 
-  if ( ESPUI.verbosity ) {
+  if( ESPUI.verbosity ) {
     Serial.printf( "Deleting file: %s\n", path );
   }
 
-  if ( SPIFFS.remove( path ) ) {
-    if ( ESPUI.verbosity ) {
+  if( SPIFFS.remove( path ) ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "File deleted" );
     }
   } else {
-    if ( ESPUI.verbosity ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Delete failed" );
     }
   }
 }
 
 void writeFile( const char* path, const char* data ) {
-  if ( ESPUI.verbosity ) {
+  if( ESPUI.verbosity ) {
     Serial.printf( "Writing file: %s\n", path );
   }
 
   File file = SPIFFS.open( path, FILE_WRITE );
 
-  if ( !file ) {
-    if ( ESPUI.verbosity ) {
+  if( !file ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Failed to open file for writing" );
     }
 
@@ -150,24 +150,24 @@ void writeFile( const char* path, const char* data ) {
 
 #if defined(ESP32)
 
-  if ( file.print( data ) ) {
-    if ( ESPUI.verbosity ) {
+  if( file.print( data ) ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "File written" );
     }
   } else {
-    if ( ESPUI.verbosity ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Write failed" );
     }
   }
 
 #else
 
-  if ( file.print( FPSTR( data ) ) ) {
-    if ( ESPUI.verbosity ) {
+  if( file.print( FPSTR( data ) ) ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "File written" );
     }
   } else {
-    if ( ESPUI.verbosity ) {
+    if( ESPUI.verbosity ) {
       Serial.println( "Write failed" );
     }
   }
@@ -181,22 +181,22 @@ void writeFile( const char* path, const char* data ) {
 void ESPUIClass::prepareFileSystem() {
   // this function should only be used once
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "About to prepare filesystem..." );
   }
 
 #if defined(ESP32)
   SPIFFS.format();
 
-  if ( !SPIFFS.begin( true ) ) {
-    if ( this->verbosity ) {
+  if( !SPIFFS.begin( true ) ) {
+    if( this->verbosity ) {
       Serial.println( "SPIFFS Mount Failed" );
     }
 
     return;
   }
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     listDir( "/", 1 );
     Serial.println( "SPIFFS Mount ESP32 Done" );
   }
@@ -205,7 +205,7 @@ void ESPUIClass::prepareFileSystem() {
   SPIFFS.format();
   SPIFFS.begin();
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "SPIFFS Mount ESP8266 Done" );
   }
 
@@ -221,7 +221,7 @@ void ESPUIClass::prepareFileSystem() {
   deleteFile( "/js/slider.js" );
   deleteFile( "/js/tabbedcontent.js" );
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "Cleanup done" );
   }
 
@@ -236,13 +236,13 @@ void ESPUIClass::prepareFileSystem() {
   writeFile( "/js/slider.js", JS_SLIDER );;
   writeFile( "/js/tabbedcontent.js", JS_TABBEDCONTENT );
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "Done Initializing filesystem :-)" );
   }
 
 #if defined(ESP32)
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     listDir( "/", 1 );
   }
 
@@ -254,9 +254,9 @@ void ESPUIClass::prepareFileSystem() {
 // Handle Websockets Communication
 void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
                 AwsEventType type, void* arg, uint8_t* data, size_t len ) {
-  switch ( type ) {
+  switch( type ) {
     case WS_EVT_DISCONNECT: {
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.printf( "Disconnected!\n" );
       }
 
@@ -264,7 +264,7 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
     }
 
     case WS_EVT_PONG: {
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.printf( "Received PONG!\n" );
       }
 
@@ -272,7 +272,7 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
     }
 
     case WS_EVT_ERROR: {
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.printf( "WebSocket Error!\n" );
       }
 
@@ -280,14 +280,14 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
     }
 
     case WS_EVT_CONNECT: {
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.print( "Connected: " );
         Serial.println( client->id() );
       }
 
       ESPUI.jsonDom( client );
 
-      if ( ESPUI.verbosity ) {
+      if( ESPUI.verbosity ) {
         Serial.println( "JSON Data Sent to Client!" );
       }
     }
@@ -297,13 +297,13 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
       String msg = "";
       msg.reserve( len + 1 );
 
-      for ( size_t i = 0; i < len; i++ ) {
+      for( size_t i = 0; i < len; i++ ) {
         msg += ( char )data[i];
       }
 
       uint16_t id =  msg.substring( msg.lastIndexOf( ':' ) + 1 ).toInt();
 
-      if ( ESPUI.verbosity >= Verbosity::VerboseJSON ) {
+      if( ESPUI.verbosity >= Verbosity::VerboseJSON ) {
         Serial.print( "WS rec: " );
         Serial.println( msg );
         Serial.print( "WS recognised ID: " );
@@ -312,8 +312,8 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
 
       Control* c = ESPUI.getControl( id );
 
-      if ( c == nullptr ) {
-        if ( ESPUI.verbosity ) {
+      if( c == nullptr ) {
+        if( ESPUI.verbosity ) {
           Serial.print( "No control found for ID " );
           Serial.println( id );
         }
@@ -321,8 +321,8 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
         return;
       }
 
-      if ( c->callback == nullptr ) {
-        if ( ESPUI.verbosity ) {
+      if( c->callback == nullptr ) {
+        if( ESPUI.verbosity ) {
           Serial.print( "No callback found for ID " );
           Serial.println( id );
         }
@@ -330,51 +330,51 @@ void onWsEvent( AsyncWebSocket* server, AsyncWebSocketClient* client,
         return;
       }
 
-      if ( msg.startsWith( "bdown:" ) ) {
+      if( msg.startsWith( "bdown:" ) ) {
         c->callback( c, B_DOWN );
-      } else if ( msg.startsWith( "bup:" ) ) {
+      } else if( msg.startsWith( "bup:" ) ) {
         c->callback( c, B_UP );
-      } else if ( msg.startsWith( "pfdown:" ) ) {
+      } else if( msg.startsWith( "pfdown:" ) ) {
         c->callback( c, P_FOR_DOWN );
-      } else if ( msg.startsWith( "pfup:" ) ) {
+      } else if( msg.startsWith( "pfup:" ) ) {
         c->callback( c, P_FOR_UP );
-      } else if ( msg.startsWith( "pldown:" ) ) {
+      } else if( msg.startsWith( "pldown:" ) ) {
         c->callback( c, P_LEFT_DOWN );
-      } else if ( msg.startsWith( "plup:" ) ) {
+      } else if( msg.startsWith( "plup:" ) ) {
         c->callback( c, P_LEFT_UP );
-      } else if ( msg.startsWith( "prdown:" ) ) {
+      } else if( msg.startsWith( "prdown:" ) ) {
         c->callback( c, P_RIGHT_DOWN );
-      } else if ( msg.startsWith( "prup:" ) ) {
+      } else if( msg.startsWith( "prup:" ) ) {
         c->callback( c, P_RIGHT_UP );
-      } else if ( msg.startsWith( "pbdown:" ) ) {
+      } else if( msg.startsWith( "pbdown:" ) ) {
         c->callback( c, P_BACK_DOWN );
-      } else if ( msg.startsWith( "pbup:" ) ) {
+      } else if( msg.startsWith( "pbup:" ) ) {
         c->callback( c, P_BACK_UP );
-      } else if ( msg.startsWith( "pcdown:" ) ) {
+      } else if( msg.startsWith( "pcdown:" ) ) {
         c->callback( c, P_CENTER_DOWN );
-      } else if ( msg.startsWith( "pcup:" ) ) {
+      } else if( msg.startsWith( "pcup:" ) ) {
         c->callback( c, P_CENTER_UP );
-      } else if ( msg.startsWith( "sactive:" ) ) {
+      } else if( msg.startsWith( "sactive:" ) ) {
         ESPUI.updateSwitcher( c->id, true );
         c->callback( c, S_ACTIVE );
-      } else if ( msg.startsWith( "sinactive:" ) ) {
+      } else if( msg.startsWith( "sinactive:" ) ) {
         ESPUI.updateSwitcher( c->id, false );
         c->callback( c, S_INACTIVE );
-      } else if ( msg.startsWith( "slvalue:" ) ) {
+      } else if( msg.startsWith( "slvalue:" ) ) {
         c->value = msg.substring( msg.indexOf( ':' ) + 1, msg.lastIndexOf( ':' ) );
         ESPUI.updateControl( c );
         c->callback( c, SL_VALUE );
-      } else if ( msg.startsWith( "nvalue:" ) ) {
+      } else if( msg.startsWith( "nvalue:" ) ) {
         c->value = msg.substring( msg.indexOf( ':' ) + 1, msg.lastIndexOf( ':' ) );
         c->callback( c, N_VALUE );
-      } else if ( msg.startsWith( "tvalue:" ) ) {
+      } else if( msg.startsWith( "tvalue:" ) ) {
         c->value = msg.substring( msg.indexOf( ':' ) + 1, msg.lastIndexOf( ':' ) );
         c->callback( c, T_VALUE );
-      } else if ( msg.startsWith( "svalue:" ) ) {
+      } else if( msg.startsWith( "svalue:" ) ) {
         c->value = msg.substring( msg.indexOf( ':' ) + 1, msg.lastIndexOf( ':' ) );
         c->callback( c, S_VALUE );
       } else {
-        if ( ESPUI.verbosity ) {
+        if( ESPUI.verbosity ) {
           Serial.println( "Malformated message from the websocket" );
         }
       }
@@ -393,12 +393,12 @@ uint16_t ESPUIClass::addControl( ControlType type, const char* label,
                                ) {
   Control* control = new Control( type, label, callback, value, color, parentControl );
 
-  if ( this->controls == nullptr ) {
+  if( this->controls == nullptr ) {
     this->controls = control;
   } else {
     Control* iterator = this->controls;
 
-    while ( iterator->next != nullptr ) {
+    while( iterator->next != nullptr ) {
       iterator = iterator->next;
     }
 
@@ -434,7 +434,7 @@ int ESPUIClass::switcher( const char* label, bool startState,
 
 int ESPUIClass::pad( const char* label, bool center,
                      void ( *callback )( Control*, int ), ControlColor color ) {
-  if ( center ) {
+  if( center ) {
     return addControl( ControlType::PadWithCenter, label, "", color, Control::noParent, callback );
   } else {
     return addControl( ControlType::Pad, label, "", color, Control::noParent, callback );
@@ -456,8 +456,8 @@ int ESPUIClass::text( const char* label, void ( *callback )( Control*, int ),
 Control* ESPUIClass::getControl( uint16_t id ) {
   Control* control = this->controls;
 
-  while ( control != nullptr ) {
-    if ( control->id == id ) {
+  while( control != nullptr ) {
+    if( control->id == id ) {
       return control;
     }
 
@@ -468,7 +468,7 @@ Control* ESPUIClass::getControl( uint16_t id ) {
 }
 
 void ESPUIClass::addGraphPoint( Control* control, int line, int nValue, int clientId ) {
-  if ( control ) {
+  if( control ) {
     Serial.println( "addGraphPoint" );
     DynamicJsonBuffer jsonBuffer( 256 );
     JsonObject& root = jsonBuffer.createObject();
@@ -481,7 +481,7 @@ void ESPUIClass::addGraphPoint( Control* control, int line, int nValue, int clie
 
     AsyncWebSocketMessageBuffer* buffer = this->ws->makeBuffer( len ); //  creates a buffer (len + 1) for you.
 
-    if ( buffer ) {
+    if( buffer ) {
       root.printTo( ( char* )buffer->get(), len + 1 );
 
       this->ws->textAll( buffer );
@@ -492,10 +492,10 @@ void ESPUIClass::addGraphPoint( Control* control, int line, int nValue, int clie
 void ESPUIClass::addGraphPoint( uint16_t id, int line, int nValue, int clientId ) {
   Control* control = getControl( id );
 
-  if ( control ) {
+  if( control ) {
     addGraphPoint( control, line, nValue, clientId );
   } else {
-    if ( this->verbosity ) {
+    if( this->verbosity ) {
       Serial.print( "Error: There is no control with ID " );
       Serial.println( String( id ) );
     }
@@ -517,7 +517,7 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
 
     char buffer[sizeOfBuffer];
 
-    if ( len >= sizeof( buffer ) ) {
+    if( len >= sizeof( buffer ) ) {
       len = sizeof( buffer ) - 1;
     }
 
@@ -526,17 +526,17 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
 
     root.printTo( ( char* )buffer/*r->get()*/, len + 1 );
 
-    if ( clientId > 0 ) {
+    if( clientId > 0 ) {
       // This is a hacky workaround because ESPAsyncWebServer does not have a function
       // like this and it's clients array is private
       int tryId = 0;
 
-      for ( int count = 0; count < this->ws->count(); ) {
-        if ( this->ws->hasClient( tryId ) ) {
-          if ( clientId != tryId ) {
+      for( int count = 0; count < this->ws->count(); ) {
+        if( this->ws->hasClient( tryId ) ) {
+          if( clientId != tryId ) {
             this->ws->client( tryId )->text( buffer );
 
-            if ( this->verbosity >= Verbosity::VerboseJSON ) {
+            if( this->verbosity >= Verbosity::VerboseJSON ) {
               Serial.println( buffer );
             }
           }
@@ -547,9 +547,9 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
         tryId++;
       }
     } else {
-        if ( this->verbosity >= Verbosity::VerboseJSON ) {
-          Serial.println( buffer );
-        }
+      if( this->verbosity >= Verbosity::VerboseJSON ) {
+        Serial.println( buffer );
+      }
 
       this->ws->textAll( buffer );
     }
@@ -559,17 +559,17 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
 void ESPUIClass::updateControl( uint16_t id, int clientId ) {
   Control* control = getControl( id );
 
-  if ( control ) {
+  if( control ) {
     updateControl( control, clientId );
   } else {
-    if ( this->verbosity ) {
+    if( this->verbosity ) {
       Serial.println( String( "Error: There is no control with ID " ) + String( id ) );
     }
   }
 }
 
 void ESPUIClass::updateControl( Control* control, String value, int clientId ) {
-  if ( control ) {
+  if( control ) {
     control->value = value;
     updateControl( control, clientId );
   }
@@ -578,10 +578,10 @@ void ESPUIClass::updateControl( Control* control, String value, int clientId ) {
 void ESPUIClass::updateControl( uint16_t id, String value, int clientId ) {
   Control* control = getControl( id );
 
-  if ( control ) {
+  if( control ) {
     updateControl( control, value, clientId );
   } else {
-    if ( this->verbosity ) {
+    if( this->verbosity ) {
       Serial.println( String( "Error: There is no control with ID " ) + String( id ) );
     }
   }
@@ -637,7 +637,7 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
     items.add( item );
   }
 
-  while ( control != nullptr ) {
+  while( control != nullptr ) {
     JsonObject& item = jsonBuffer.createObject();
 
     item["id"] = String( control->id );
@@ -646,13 +646,13 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
     item["value"] = String( control->value );
     item["color"] = ( int )control->color;
 
-    if ( control->parentControl != Control::noParent ) {
+    if( control->parentControl != Control::noParent ) {
       item["parentControl"] = String( control->parentControl );
     }
 
     // special case for selects: to preselect an option, you have to add "selected" to <option>
-    if ( control->type == ControlType::Option ) {
-      if ( ESPUI.getControl( control->parentControl )->value == control->value ) {
+    if( control->type == ControlType::Option ) {
+      if( ESPUI.getControl( control->parentControl )->value == control->value ) {
         item["selected"] = "selected";
       } else {
         item["selected"] = "";
@@ -671,9 +671,10 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
 
   AsyncWebSocketMessageBuffer* buffer = this->ws->makeBuffer( len ); //  creates a buffer (len + 1) for you.
 
-  if ( buffer ) {
+  if( buffer ) {
     root.printTo( ( char* )buffer->get(), len + 1 );
     client->text( buffer );
+
   }
 }
 
@@ -682,7 +683,7 @@ void ESPUIClass::beginSPIFFS( const char* _title, const char* username, const ch
   this->basicAuthUsername = username;
   this->basicAuthPassword = password;
 
-  if ( username == nullptr && password == nullptr ) {
+  if( username == nullptr && password == nullptr ) {
     basicAuth = false;
   } else {
     basicAuth = true;
@@ -691,25 +692,25 @@ void ESPUIClass::beginSPIFFS( const char* _title, const char* username, const ch
   server = new AsyncWebServer( 80 );
   ws = new AsyncWebSocket( "/ws" );
 
-  if ( !SPIFFS.begin() ) {
-    if ( ESPUI.verbosity ) {
+  if( !SPIFFS.begin() ) {
+    if( ESPUI.verbosity ) {
       Serial.println(
-        "SPIFFS Mount Failed, PLEASE CHECK THE README ON HOW TO "
-        "PREPARE YOUR ESP!!!!!!!" );
+              "SPIFFS Mount Failed, PLEASE CHECK THE README ON HOW TO "
+              "PREPARE YOUR ESP!!!!!!!" );
     }
 
     return;
   }
 
-  if ( ESPUI.verbosity ) {
+  if( ESPUI.verbosity ) {
     listDir( "/", 1 );
   }
 
-  if ( !SPIFFS.exists( "/index.htm" ) ) {
-    if ( ESPUI.verbosity ) {
+  if( !SPIFFS.exists( "/index.htm" ) ) {
+    if( ESPUI.verbosity ) {
       Serial.println(
-        "Please read the README!!!!!!!, Make sure to "
-        "ESPUI.prepareFileSystem() once in an empty sketch" );
+              "Please read the README!!!!!!!, Make sure to "
+              "ESPUI.prepareFileSystem() once in an empty sketch" );
     }
 
     return;
@@ -718,9 +719,9 @@ void ESPUIClass::beginSPIFFS( const char* _title, const char* username, const ch
   ws->onEvent( onWsEvent );
   server->addHandler( ws );
 
-  if ( basicAuth ) {
+  if( basicAuth ) {
 
-    if ( WS_AUTHENTICATION ) {
+    if( WS_AUTHENTICATION ) {
       ws->setAuthentication( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword );
     }
 
@@ -735,7 +736,7 @@ void ESPUIClass::beginSPIFFS( const char* _title, const char* username, const ch
 
   // Heap for general Servertest
   server->on( "/heap", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
@@ -750,7 +751,7 @@ void ESPUIClass::beginSPIFFS( const char* _title, const char* username, const ch
 
   server->begin();
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "UI Initialized" );
   }
 }
@@ -759,7 +760,7 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
   basicAuthUsername = username;
   basicAuthPassword = password;
 
-  if ( username != nullptr && password != nullptr ) {
+  if( username != nullptr && password != nullptr ) {
     basicAuth = true;
   } else {
     basicAuth = false;
@@ -773,66 +774,66 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
   ws->onEvent( onWsEvent );
   server->addHandler( ws );
 
-  if ( basicAuth && WS_AUTHENTICATION )
+  if( basicAuth && WS_AUTHENTICATION )
     ws->setAuthentication( username, password );
 
 
   server->on( "/", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P( 200, "text/html", HTML_INDEX );
+            request->beginResponse_P( 200, "text/html", HTML_INDEX );
     request->send( response );
   } );
 
   // Javascript files
 
   server->on( "/js/zepto.min.js", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "application/javascript", JS_ZEPTO_GZIP, sizeof( JS_ZEPTO_GZIP ) );
+            request->beginResponse_P(
+                    200, "application/javascript", JS_ZEPTO_GZIP, sizeof( JS_ZEPTO_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
 
   server->on( "/js/controls.js", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "application/javascript", JS_CONTROLS_GZIP, sizeof( JS_CONTROLS_GZIP ) );
+            request->beginResponse_P(
+                    200, "application/javascript", JS_CONTROLS_GZIP, sizeof( JS_CONTROLS_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
 
   server->on( "/js/slider.js", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "application/javascript", JS_SLIDER_GZIP, sizeof( JS_SLIDER_GZIP ) );
+            request->beginResponse_P(
+                    200, "application/javascript", JS_SLIDER_GZIP, sizeof( JS_SLIDER_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
 
   server->on( "/js/tabbedcontent.js", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "application/javascript", JS_TABBEDCONTENT_GZIP, sizeof( JS_TABBEDCONTENT_GZIP ) );
+            request->beginResponse_P(
+                    200, "application/javascript", JS_TABBEDCONTENT_GZIP, sizeof( JS_TABBEDCONTENT_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
@@ -840,33 +841,33 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
   // Stylesheets
 
   server->on( "/css/style.css", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "text/css", CSS_STYLE_GZIP, sizeof( CSS_STYLE_GZIP ) );
+            request->beginResponse_P(
+                    200, "text/css", CSS_STYLE_GZIP, sizeof( CSS_STYLE_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
 
   server->on(
   "/css/normalize.css", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
     AsyncWebServerResponse* response =
-      request->beginResponse_P(
-        200, "text/css", CSS_NORMALIZE_GZIP, sizeof( CSS_NORMALIZE_GZIP ) );
+            request->beginResponse_P(
+                    200, "text/css", CSS_NORMALIZE_GZIP, sizeof( CSS_NORMALIZE_GZIP ) );
     response->addHeader( "Content-Encoding", "gzip" );
     request->send( response );
   } );
 
   // Heap for general Servertest
   server->on( "/heap", HTTP_GET, []( AsyncWebServerRequest * request ) {
-    if ( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
+    if( ESPUI.basicAuth && !request->authenticate( ESPUI.basicAuthUsername, ESPUI.basicAuthPassword ) ) {
       return request->requestAuthentication();
     }
 
@@ -881,7 +882,7 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
 
   server->begin();
 
-  if ( this->verbosity ) {
+  if( this->verbosity ) {
     Serial.println( "UI Initialized" );
   }
 }
