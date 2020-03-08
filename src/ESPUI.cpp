@@ -964,3 +964,7 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
     Serial.println( "UI Initialized" );
   }
 }
+
+AsyncWebServer* ESPUIClass::getServer() {
+  return server;
+}

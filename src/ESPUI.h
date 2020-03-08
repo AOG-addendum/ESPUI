@@ -265,6 +265,8 @@ class ESPUIClass {
 
     Verbosity verbosity;
 
+    AsyncWebServer* getServer();
+
   private:
     const char* basicAuthUsername = nullptr;
     const char* basicAuthPassword = nullptr;
