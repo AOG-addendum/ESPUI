@@ -347,11 +347,11 @@ p {
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 a {
-  color: #1eaedb;
+  color: #fff;
 }
 
 a:hover {
-  color: #0fa0ce;
+  color: #eee;
 }
 
 /* Buttons
