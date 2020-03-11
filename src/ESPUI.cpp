@@ -467,17 +467,17 @@ void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
 
   DynamicJsonBuffer jsonBuffer( 4096 );
   JsonObject& root = jsonBuffer.createObject();
-  root["type"] = ( int )ControlType::BatchUpdate;
+  root["t"] = ( int )ControlType::BatchUpdate;
   JsonArray& items = jsonBuffer.createArray();
 
   while( control != nullptr ) {
     if( control->dirty ) {
       JsonObject& item = jsonBuffer.createObject();
 
-      item["type"] = ( int )control->type + ControlType::UpdateOffset;
-      item["value"] = control->value;
+      item["t"] = ( int )control->type + ControlType::UpdateOffset;
+      item["v"] = control->value;
       item["id"] = control->id;
-      item["color"] = ( int )control->color;
+      item["c"] = ( int )control->color;
 
       items.add( item );
 
@@ -537,10 +537,10 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
     StaticJsonBuffer<sizeOfBuffer> jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
 
-    root["type"] = ( int )control->type + ControlType::UpdateOffset;
-    root["value"] = control->value;
+    root["t"] = ( int )control->type + ControlType::UpdateOffset;
+    root["v"] = control->value;
     root["id"] = control->id;
-    root["color"] = ( int )control->color;
+    root["c"] = ( int )control->color;
     size_t len = root.measureLength();
 
     char buffer[sizeOfBuffer];
@@ -639,37 +639,51 @@ sent as one blob at the beginning. Therefore a new type is used as well
 void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
   DynamicJsonBuffer jsonBuffer( 4096 );
   JsonObject& root = jsonBuffer.createObject();
-  root["type"] = ( int )UI_INITIAL_GUI;
+  root["t"] = ( int )UI_INITIAL_GUI;
   JsonArray& items = jsonBuffer.createArray();
 
   Control* control = this->controls;
 
   {
     JsonObject& item = jsonBuffer.createObject();
-    item["type"] = ( int )UI_TITLE;
-    item["label"] = ui_title;
+    item["t"] = ( int )UI_TITLE;
+    item["l"] = ui_title;
     items.add( item );
   }
 
   while( control != nullptr ) {
     JsonObject& item = jsonBuffer.createObject();
 
-    item["id"] = String( control->id );
-    item["type"] = ( int )control->type;
-    item["label"] = control->label;
-    item["value"] = String( control->value );
-    item["color"] = ( int )control->color;
+    if( control->type == ControlType::Tab || ( control->type >= ControlType::Min && control->type <= ControlType::Step ) ) {
+      item["id"] = String( control->id );
+      item["t"] = ( int )control->type;
+      item["v"] = String( control->value );
 
-    if( control->parentControl != Control::noParent ) {
-      item["parentControl"] = String( control->parentControl );
-    }
+      if( control->parentControl != Control::noParent ) {
+        item["pc"] = String( control->parentControl );
+      }
+    } else if( control->type == ControlType::Option ) {
+      item["id"] = String( control->id );
+      item["t"] = ( int )control->type;
+      item["l"] = control->label;
+      item["v"] = String( control->value );
 
-    // special case for selects: to preselect an option, you have to add "selected" to <option>
-    if( control->type == ControlType::Option ) {
+      item["pc"] = String( control->parentControl );
+
       if( ESPUI.getControl( control->parentControl )->value == control->value ) {
-        item["selected"] = "selected";
+        item["s"] = "selected";
       } else {
-        item["selected"] = "";
+        item["s"] = "";
+      }
+    } else {
+      item["id"] = String( control->id );
+      item["t"] = ( int )control->type;
+      item["l"] = control->label;
+      item["v"] = String( control->value );
+      item["c"] = ( int )control->color;
+
+      if( control->parentControl != Control::noParent ) {
+        item["pc"] = String( control->parentControl );
       }
     }
 
@@ -678,7 +692,7 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
     control = control->next;
   }
 
-  // Send as one big bunch
+// Send as one big bunch
   root["controls"] = items;
 
   size_t len = root.measureLength();
@@ -688,7 +702,6 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
   if( buffer ) {
     root.printTo( ( char* )buffer->get(), len + 1 );
     client->text( buffer );
-
   }
 }
 
