@@ -412,11 +412,6 @@ int ESPUIClass::label( const char* label, ControlColor color, String value ) {
   return addControl( ControlType::Label, label, value, color );
 }
 
-int ESPUIClass::graph( const char* label, ControlColor color ) {
-  return addControl( ControlType::Graph, label, "", color );
-}
-
-// TODO: this still needs a range setting
 int ESPUIClass::slider( const char* label, void ( *callback )( Control*, int ),
                         ControlColor color, String value ) {
   return addControl( ControlType::Slider, label, "", color, Control::noParent, callback );
@@ -465,41 +460,6 @@ Control* ESPUIClass::getControl( uint16_t id ) {
   }
 
   return nullptr;
-}
-
-void ESPUIClass::addGraphPoint( Control* control, int line, int nValue, int clientId ) {
-  if( control ) {
-    Serial.println( "addGraphPoint" );
-    DynamicJsonBuffer jsonBuffer( 256 );
-    JsonObject& root = jsonBuffer.createObject();
-
-    root["type"] = ( int )ControlType::GraphPoint;
-    root["value"] = nValue;
-    root["id"] = control->id;
-    root["line"] = line;
-    size_t len = root.measureLength();
-
-    AsyncWebSocketMessageBuffer* buffer = this->ws->makeBuffer( len ); //  creates a buffer (len + 1) for you.
-
-    if( buffer ) {
-      root.printTo( ( char* )buffer->get(), len + 1 );
-
-      this->ws->textAll( buffer );
-    }
-  }
-}
-
-void ESPUIClass::addGraphPoint( uint16_t id, int line, int nValue, int clientId ) {
-  Control* control = getControl( id );
-
-  if( control ) {
-    addGraphPoint( control, line, nValue, clientId );
-  } else {
-    if( this->verbosity ) {
-      Serial.print( "Error: There is no control with ID " );
-      Serial.println( String( id ) );
-    }
-  }
 }
 
 void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
@@ -666,32 +626,8 @@ void ESPUIClass::updateControlAsync( uint16_t id ) {
   updateControlAsync( control );
 }
 
-void ESPUIClass::print( uint16_t id, String value ) {
-  updateControl( id, value );
-}
-
-void ESPUIClass::updateLabel( uint16_t id, String value ) {
-  updateControl( id, value );
-}
-
-void ESPUIClass::updateSlider( uint16_t id, int nValue, int clientId ) {
-  updateControl( id, String( nValue ), clientId );
-}
-
 void ESPUIClass::updateSwitcher( uint16_t id, bool nValue, int clientId ) {
   updateControl( id, String( nValue ? "1" : "0" ), clientId );
-}
-
-void ESPUIClass::updateNumber( uint16_t id, int number, int clientId ) {
-  updateControl( id, String( number ), clientId );
-}
-
-void ESPUIClass::updateText( uint16_t id, String text, int clientId ) {
-  updateControl( id, text, clientId );
-}
-
-void ESPUIClass::updateSelect( uint16_t id, String text, int clientId ) {
-  updateControl( id, text, clientId );
 }
 
 /*

@@ -223,7 +223,6 @@ class ESPUIClass {
 
     // Output only
     int label( const char* label, ControlColor color, String value = "" ); // Create Label
-    int graph( const char* label, ControlColor color ); // Create Graph display
 
     // Update Elements
 
@@ -239,24 +238,7 @@ class ESPUIClass {
     void updateControlAsync( uint16_t id );
     void updateControlAsyncTransmit( int clientId = -1 );
 
-    void print( uint16_t id, String value );
-
-    void updateLabel( uint16_t id, String value );
-
     void updateSwitcher( uint16_t id, bool nValue, int clientId = -1 );
-
-    void updateSlider( uint16_t id, int nValue, int clientId = -1 );
-
-    void updateNumber( uint16_t id, int nValue, int clientId = -1 );
-
-    void updateText( uint16_t id, String nValue, int clientId = -1 );
-
-    void updateSelect( uint16_t id, String nValue, int clientId = -1 );
-
-    void addGraphPoint( Control* control, int line, int nValue, int clientId = -1 );
-    void addGraphPoint( uint16_t id, int line, int nValue, int clientId = -1 );
-
-//     void textThem( String text, int clientId = -1 );
 
     // Variables ---
     const char* ui_title = "ESPUI";  // Store UI Title and Header Name
