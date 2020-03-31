@@ -18,7 +18,6 @@
 
 #else
 
-#include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <ESPAsyncTCP.h>
@@ -247,12 +246,12 @@ class ESPUIClass {
 
     Verbosity verbosity;
 
-    AsyncWebServer* getServer();
-
   private:
     const char* basicAuthUsername = nullptr;
     const char* basicAuthPassword = nullptr;
     bool basicAuth = true;
+
+  public:
     AsyncWebServer* server;
     AsyncWebSocket* ws;
 };

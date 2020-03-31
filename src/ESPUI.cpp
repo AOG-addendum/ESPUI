@@ -465,7 +465,7 @@ Control* ESPUIClass::getControl( uint16_t id ) {
 void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
   Control* control = this->controls;
 
-  DynamicJsonBuffer jsonBuffer( 4096 );
+  DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["t"] = ( int )ControlType::BatchUpdate;
   JsonArray& items = jsonBuffer.createArray();
@@ -491,10 +491,12 @@ void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
   root["controls"] = items;
 
   size_t len = root.measureLength();
-  char* buffer = new char[ len + 1 ];
 
-  if( buffer ) {
+  try {
+    char* buffer = new char[ len + 1 ];
+
     root.printTo( ( char* )buffer, len + 1 );
+    jsonBuffer.clear();
 
     if( clientId > 0 ) {
       // This is a hacky workaround because ESPAsyncWebServer does not have a function
@@ -524,17 +526,17 @@ void ESPUIClass::updateControlAsyncTransmit( int clientId ) {
       this->ws->textAll( buffer );
     }
 
+    delete buffer;
+  } catch( const std::bad_alloc& e ) {
+    Serial.print( "EXCEPTION: Allocation failed: " );
+    Serial.println( e.what() );
   }
-
-  delete buffer;
 }
 
 
 void ESPUIClass::updateControl( Control* control, int clientId ) {
   if( control ) {
-    constexpr size_t sizeOfBuffer = 256;
-
-    StaticJsonBuffer<sizeOfBuffer> jsonBuffer;
+    DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
 
     root["t"] = ( int )control->type + ControlType::UpdateOffset;
@@ -543,43 +545,44 @@ void ESPUIClass::updateControl( Control* control, int clientId ) {
     root["c"] = ( int )control->color;
     size_t len = root.measureLength();
 
-    char buffer[sizeOfBuffer];
+    try {
+      char* buffer = new char[ len + 1 ];
 
-    if( len >= sizeof( buffer ) ) {
-      len = sizeof( buffer ) - 1;
-    }
+      root.printTo( ( char* )buffer, len + 1 );
+      jsonBuffer.clear();
 
+      if( clientId > 0 ) {
+        // This is a hacky workaround because ESPAsyncWebServer does not have a function
+        // like this and it's clients array is private
+        int tryId = 0;
 
-//     AsyncWebSocketMessageBuffer* buffer = this->ws->makeBuffer( len ); //  creates a buffer (len + 1) for you.
+        for( int count = 0; count < this->ws->count(); ) {
+          if( this->ws->hasClient( tryId ) ) {
+            if( clientId != tryId ) {
+              this->ws->client( tryId )->text( buffer );
 
-    root.printTo( ( char* )buffer/*r->get()*/, len + 1 );
-
-    if( clientId > 0 ) {
-      // This is a hacky workaround because ESPAsyncWebServer does not have a function
-      // like this and it's clients array is private
-      int tryId = 0;
-
-      for( int count = 0; count < this->ws->count(); ) {
-        if( this->ws->hasClient( tryId ) ) {
-          if( clientId != tryId ) {
-            this->ws->client( tryId )->text( buffer );
-
-            if( this->verbosity >= Verbosity::VerboseJSON ) {
-              Serial.println( buffer );
+              if( this->verbosity >= Verbosity::VerboseJSON ) {
+                Serial.println( buffer );
+              }
             }
+
+            count++;
           }
 
-          count++;
+          tryId++;
+        }
+      } else {
+        if( this->verbosity >= Verbosity::VerboseJSON ) {
+          Serial.println( buffer );
         }
 
-        tryId++;
-      }
-    } else {
-      if( this->verbosity >= Verbosity::VerboseJSON ) {
-        Serial.println( buffer );
+        this->ws->textAll( buffer );
       }
 
-      this->ws->textAll( buffer );
+      delete buffer;
+    } catch( const std::bad_alloc& e ) {
+      Serial.print( "EXCEPTION: Allocation failed: " );
+      Serial.println( e.what() );
     }
   }
 }
@@ -637,7 +640,7 @@ Due to a change in the ESPAsyncWebserver library this had top be changed to be
 sent as one blob at the beginning. Therefore a new type is used as well
 */
 void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
-  DynamicJsonBuffer jsonBuffer( 4096 );
+  DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["t"] = ( int )UI_INITIAL_GUI;
   JsonArray& items = jsonBuffer.createArray();
@@ -697,11 +700,17 @@ void ESPUIClass::jsonDom( AsyncWebSocketClient* client ) {
 
   size_t len = root.measureLength();
 
-  AsyncWebSocketMessageBuffer* buffer = this->ws->makeBuffer( len ); //  creates a buffer (len + 1) for you.
+  try {
+    char* buffer = new char[ len + 1 ];
 
-  if( buffer ) {
-    root.printTo( ( char* )buffer->get(), len + 1 );
+    root.printTo( ( char* )buffer, len + 1 );
+    jsonBuffer.clear();
     client->text( buffer );
+
+    delete buffer;
+  } catch( const std::bad_alloc& e ) {
+    Serial.print( "EXCEPTION: Allocation failed: " );
+    Serial.println( e.what() );
   }
 }
 
@@ -912,8 +921,4 @@ void ESPUIClass::begin( const char* _title, const char* username, const char* pa
   if( this->verbosity ) {
     Serial.println( "UI Initialized" );
   }
-}
-
-AsyncWebServer* ESPUIClass::getServer() {
-  return server;
 }
